@@ -1,0 +1,14 @@
+.bubble {
+  border: 2px solid;
+  display: inline-block;
+  width: 80px;
+  height: 20px;
+  line-height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+  text-align: center;
+  font-weight: bold;
+}
+body {
+  font-family: sans-serif;
+}

@@ -11,26 +11,44 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var app = express();
 
-app.get("/traffic.json", function(req,res){
-  router.getStatistics(function(data){
+var api = express.Router();
+api.get("/traffic.json", function(req, res){
+  router.getStatistics(function(data, err){
+    if(err){
+      res.status(503);
+      res.send("Error retrieving resource");
+      return;
+    }
     res.status(200);
     res.json(data);
   });
 });
 
-app.get("/wireless.json", function(req,res){
-  radio.getStatus(function(data){
+api.get("/wireless.json", function(req, res){
+  radio.getStatus(function(data, err){
+    if(err){
+      res.status(503);
+      res.send("Error retrieving resource");
+      return;
+    }
     res.status(200);
     res.json(data);
   });
 });
 
-app.get("/reset", function(req,res){
+api.get("/reset", function(req, res){
   outlet.reset();
   res.status(200);
   res.send("Outlet reset.");
 });
 
-app.listen(3000,function(){
+app.use("/api", api);
+app.get("/", function(req, res){
+  res.sendFile("index.html", {root:__dirname + "/public/"});
+});
+
+app.use(express.static("public"));
+
+app.listen(3000, function(){
   console.log("Server started");
 });

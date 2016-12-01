@@ -7,7 +7,7 @@ var url = "https://192.168.0.5"
 var cookies = request.jar();
 
 function logIn(callback, cbparams){
-  console.log("Logging-in to radio");
+  console.log(new Date().toISOString() + " Logging into radio");
   var formData = {
     username: config.radio.username,
     password: config.radio.password
@@ -23,7 +23,9 @@ function logIn(callback, cbparams){
 
 exports.getStatus = function(callback){
   request.get({url:url + "/status.cgi", jar:cookies}, function(err, res, body){
-    if(err) return console.error(err);
+    if(err){
+      return callback(null, err);
+    }
     if(res.request.uri.pathname != "/status.cgi"){
       //Need to log-in again.
       logIn(exports.getStatus, [callback]);

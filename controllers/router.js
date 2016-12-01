@@ -12,9 +12,8 @@ var baseHeaders = {
 }
 
 function logIn(callback, cbparams){
-  console.log("Logging-in to router");
+  console.log(new Date().toISOString() + " Logging into router");
   request.get({url:url, followAllRedirects:true, jar:cookies}, function(err, res, body){
-    if(err) return console.error(err);
     //Lol what the hell is this (how the client sends the password)
     var cs = cookies.getCookieString(url).split("=")[1];
     var tmp_pass = crypto.createHash("md5").update(config.router.password).digest("hex");
@@ -36,6 +35,9 @@ function logIn(callback, cbparams){
 
 exports.getStatistics = function(callback){
   request.get({url:url + "/userRpm/System_Statics.htm?btn_refresh=btn_refresh&comindex=9&direct=1&interface=1", followAllRedirects:true, jar:cookies, headers:baseHeaders}, function(err, res, body){
+    if(err){
+      return callback(null, err);
+    }
     //This seems to be the only variable (outside of parsing html) that identifies a logout
     if(res.headers["set-cookie"]){
       logIn(exports.getStatistics, [callback]);
