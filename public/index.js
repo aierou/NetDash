@@ -1,8 +1,4 @@
-window.onload = function(){
-  //Do the things
-  setInterval(update, 2000);
-  update();
-}
+window.onload = init;
 
 var trafficHeaders = [
   "IP",
@@ -29,10 +25,34 @@ var trafficSortProperties = {type:"descend", col:1};
 var wirelessData = {};
 var health = [];
 
+function init(){
+  document.getElementById("reset").onclick=resetModem;
+  setInterval(update, 2000);
+  update();
+}
+
 function update(){
   getWirelessStatus();
   getTrafficStatistics();
   getHealth();
+}
+
+var resetting = false;
+function resetModem(){
+  if(resetting) return;
+  resetting = true;
+  var request = new XMLHttpRequest();
+  request.open("GET", "/api/reset", true);
+  request.send();
+
+  //Now the graphical stuff
+  document.getElementById("resetinfo").textContent = "Resetting...";
+  document.getElementById("reset").setAttribute("disabled", "disabled");
+  var resetDelay = setTimeout(function(){
+    resetting = false;
+    document.getElementById("resetinfo").textContent = "";
+    document.getElementById("reset").removeAttribute("disabled");
+  },2000);
 }
 
 function getWirelessStatus(){
@@ -148,13 +168,14 @@ var trafficFormat = new Intl.NumberFormat("en", {maximumFractionDigits:1});
 function formatTrafficStat(stat, bytes, present){
   var ret = trafficFormat.format(stat);
   if(bytes){
-    //B/s KiB/s, MB/s, GB/s
-    if(stat > 1000 * 1000 * 1000){ //I wish
-      ret = trafficFormat.format(stat/(1000*1000*1000)) + " GB";
-    }else if(stat > 1000 * 1000){
-      ret = trafficFormat.format(stat/(1000*1000)) + " MB";
-    }else if(stat > 1000){
-      ret = trafficFormat.format(stat/(1000)) + " KB";
+    if(stat > 1e12){
+      ret = trafficFormat.format(stat/(1e9)) + " TB";
+    }else if(stat > 1e9){
+      ret = trafficFormat.format(stat/(1e9)) + " GB";
+    }else if(stat > 1e6){
+      ret = trafficFormat.format(stat/(1e6)) + " MB";
+    }else if(stat > 1e3){
+      ret = trafficFormat.format(stat/(1e3)) + " KB";
     }else{
       ret = Math.floor(stat) + " B";
     }

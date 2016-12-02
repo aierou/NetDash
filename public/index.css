@@ -41,3 +41,6 @@ body {
   cursor: pointer;
   user-select: none;
 }
+#resetinfo {
+  position: absolute;
+}

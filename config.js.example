@@ -1,0 +1,14 @@
+module.exports = {
+  radio:{
+    username:"username",
+    password:"password"
+  },
+  reset:{
+    username:"username",
+    password:"password"
+  },
+  router:{
+    username:"username",
+    password:"password"
+  }
+};
