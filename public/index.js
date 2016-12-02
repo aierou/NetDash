@@ -7,8 +7,8 @@ var trafficHeaders = [
   "Up Speed",
   "Pkt/s Down",
   "Pkt/s Up",
-  "Total Bytes Down",
-  "Total Bytes Up",
+  "Total Downloaded",
+  "Total Uploaded",
   "Total Packets Down",
   "Total Packets Up",
 ]

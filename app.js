@@ -14,15 +14,8 @@ var app = express();
 
 var api = express.Router();
 api.get("/traffic.json", function(req, res){
-  router.getStatistics(function(data, err){
-    if(err){
-      res.status(503);
-      res.send("Error retrieving resource");
-      return;
-    }
-    res.status(200);
-    res.json(data);
-  });
+  res.status(200);
+  res.json(router.getStatistics());
 });
 
 api.get("/wireless.json", function(req, res){
