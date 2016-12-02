@@ -5,7 +5,8 @@ var fs = require("fs"),
 var config = require("./config.js"),
     radio = require("./controllers/radio.js"),
     outlet = require("./controllers/outlet.js"),
-    router = require("./controllers/router.js");
+    router = require("./controllers/router.js"),
+    health = require("./controllers/health.js");
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -34,6 +35,11 @@ api.get("/wireless.json", function(req, res){
     res.status(200);
     res.json(data);
   });
+});
+
+api.get("/health.json", function(req, res){
+  res.status(200);
+  res.json(health.getResults());
 });
 
 api.get("/reset", function(req, res){

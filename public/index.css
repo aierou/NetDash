@@ -1,5 +1,5 @@
 .bubble {
-  border: 2px solid;
+  border: 1px solid;
   display: inline-block;
   width: 80px;
   height: 20px;
@@ -7,8 +7,37 @@
   overflow: hidden;
   vertical-align: middle;
   text-align: center;
-  font-weight: bold;
 }
 body {
-  font-family: sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #333333;
+}
+.sortascend::after {
+  content: "▲";
+  position: absolute;
+}
+.sortdescend::after {
+  content: "▼";
+  position: absolute;
+}
+#diagnostics > table {
+  width: 100%;
+}
+#traffic table {
+  border-collapse: collapse;
+  width: 100%;
+}
+#traffic tr:nth-child(2n){
+  background-color: lightgrey;
+}
+#traffic td:nth-child(1){
+  padding-right: 20px;
+}
+#traffic th {
+  text-align: left;
+  background-color: lightblue;
+  padding-right: 20px;
+  cursor: pointer;
+  user-select: none;
 }

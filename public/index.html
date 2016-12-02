@@ -5,8 +5,28 @@
   <script src="index.js"></script>
 </head>
 <body>
-  <span>Signal strength: <div id="wireless_signal" class="bubble"></div></span>
-  <p></p>
-  <span>Transfer rate (rx/tx): <div id="transfer_rate" class="bubble"></div></span>
+  <h1>Network diagnostics:</h1>
+  <div id="diagnostics">
+    <table>
+      <td>
+        <table>
+        <tr>
+          <td>Signal strength (dB): </td>
+          <td><div id="wireless_signal" class="bubble"></div></td>
+        </tr>
+        <tr>
+          <td>Transfer rate rx/tx (Mbps): </td>
+          <td><div id="transfer_rate" class="bubble"></div></td>
+        </tr>
+        </table>
+      </td>
+      <td>
+        <div id="health">
+          
+        </div>
+      </td>
+    </table>
+  </div>
+  <h1>Network traffic:</h1>
   <div id="traffic"></div>
 </body>

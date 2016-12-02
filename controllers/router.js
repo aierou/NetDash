@@ -55,17 +55,17 @@ exports.getStatistics = function(callback){
     var len = Math.floor(values.length / 10) * 10;
     for(var i = 0; i < len; i += 10){
       var index = i/10;
-      statistics[index] = {};
-      statistics[index].ip = values[i]; //IP
+      statistics[index] = [];
+      statistics[index][0] = values[i]; //IP
       //Don't care about i+1
-      statistics[index].ptotalu = values[i+2]; //total pkts up
-      statistics[index].ptotald = values[i+3]; //total pkts down
-      statistics[index].btotalu = values[i+4]; //total bytes up
-      statistics[index].btotald = values[i+5]; //total bytes down
-      statistics[index].pcurru = values[i+6]; //current pkts up
-      statistics[index].pcurrd = values[i+7]; //current pkts down
-      statistics[index].bcurru = values[i+8]; //current bits up
-      statistics[index].bcurrd = values[i+9]; //current bits down
+      statistics[index][8] = values[i+2]; //total pkts up
+      statistics[index][7] = values[i+3]; //total pkts down
+      statistics[index][6] = values[i+4]; //total bytes up
+      statistics[index][5] = values[i+5]; //total bytes down
+      statistics[index][4] = values[i+6]; //current pkts up
+      statistics[index][3] = values[i+7]; //current pkts down
+      statistics[index][2] = values[i+8]; //current bits up
+      statistics[index][1] = values[i+9]; //current bits down
     }
     callback(statistics);
   });
