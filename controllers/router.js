@@ -10,6 +10,7 @@ var cookies = request.jar();
 var baseHeaders = {
   "Referer": "http://192.168.0.1/logon/logon.htm" //just need some "valid" referer
 }
+var hostnames = [];
 
 function logIn(callback, cbparams){
   console.log(new Date().toISOString() + " Logging into router");
@@ -32,6 +33,37 @@ function logIn(callback, cbparams){
     });
   });
 }
+
+function getDHCPClients(){
+  request.get({url:url + "/userRpm/DhcpServer_ClientList.htm?slt_interface=0", followAllRedirects:true, jar:cookies, headers:baseHeaders}, function(err, res, body){
+    if(err) console.log(err);
+    //This seems to be the only variable (outside of parsing html) that identifies a logout
+    if(res.headers["set-cookie"]){
+      logIn(getDHCPClients);
+      return;
+    }
+
+    var i = body.indexOf("var dhcpList = new Array(");
+    i += "var dhcpList = new Array(".length;
+    var j = body.indexOf("0,0 );\n</script>\n<script language=JavaScript>\nvar dhcpPara = new Array(");
+    nums = body.substring(i,j);
+    nums = nums.split("\"").join("").split("\n").join(""); //replace all the extra formatting nonsense
+
+    var values = nums.split(",");
+    var clients = new Array();
+    var len = Math.floor(values.length / 4) * 4;
+    for(var i = 0; i < len; i += 4){
+      var index = i/4;
+      clients[index] = {};
+      clients[index].hostname = values[i];
+      //clients[index].mac = values[i+2]; // Don't really care about mac address
+      clients[index].ip = values[i+2];
+    }
+    hostnames = clients;
+  });
+}
+getDHCPClients();
+setInterval(getDHCPClients, 60000);
 
 exports.getStatistics = function(callback){
   request.get({url:url + "/userRpm/System_Statics.htm?btn_refresh=btn_refresh&comindex=9&direct=1&interface=1", followAllRedirects:true, jar:cookies, headers:baseHeaders}, function(err, res, body){
@@ -67,6 +99,6 @@ exports.getStatistics = function(callback){
       statistics[index][2] = values[i+8]; //current bits up
       statistics[index][1] = values[i+9]; //current bits down
     }
-    callback(statistics);
+    callback({traffic:statistics, clients:hostnames});
   });
 }

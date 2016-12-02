@@ -2,6 +2,7 @@ window.onload = init;
 
 var trafficHeaders = [
   "IP",
+  "Hostname",
   "Down Speed",
   "Up Speed",
   "Pkt/s Down",
@@ -16,14 +17,15 @@ var trafficHeaderRow = document.createElement("tr");
 for(var i = 0; i < trafficHeaders.length; i++){
   var th = document.createElement("th");
   th.textContent = trafficHeaders[i];
-  th.setAttribute("onclick", "orderTrafficStatistics("+i+");")
+  if(i != 1) th.setAttribute("onclick", "orderTrafficStatistics("+i+");")
   trafficHeaderRow.appendChild(th);
 }
 trafficHeaderRow.setAttribute("id","trafficHeaderRow");
 var trafficStats = [];
-var trafficSortProperties = {type:"descend", col:1};
+var trafficSortProperties = {type:"descend", col:2};
 var wirelessData = {};
 var health = [];
+var hostnames = [];
 
 function init(){
   document.getElementById("reset").onclick=resetModem;
@@ -76,7 +78,9 @@ function getTrafficStatistics(){
   request.open("GET", "/api/traffic.json", true);
   request.onload = function(){
     if (request.status >= 200 && request.status < 400){
-      trafficStats = JSON.parse(request.responseText);
+      var data = JSON.parse(request.responseText);
+      trafficStats = data.traffic;
+      hostnames = data.clients;
       for(var i = 0; i < trafficStats.length; i++){
         var obj = {};
         obj.raw = trafficStats[i];
@@ -203,9 +207,9 @@ function orderTrafficStatistics(col, update){
   if(document.getElementById("traffic").firstChild){ //remove the table if it exists
     document.getElementById("traffic").removeChild(document.getElementById("traffic").firstChild);
   }
-  if(col==0){ //ip
+  if(col == 0){ //ip
     trafficStats.sort(function(a, b){
-      var ret = 0;
+      var ret;
       a = a.raw[col].split(".").reduce((x, y) => parseInt(x,10) + parseInt(y,10));
       b = b.raw[col].split(".").reduce((x, y) => parseInt(x,10) + parseInt(y,10));
       ret = b - a;
@@ -214,9 +218,9 @@ function orderTrafficStatistics(col, update){
     });
   }else{
     trafficStats.sort(function(a, b){
-      var ret = 0;
-      a = parseInt(a.raw[col], 10);
-      b = parseInt(b.raw[col], 10);
+      var ret;
+      a = parseInt(a.raw[col-1], 10);
+      b = parseInt(b.raw[col-1], 10);
       ret = b - a;
       if(trafficSortProperties.type == "ascend") ret *= -1;
       return ret;
@@ -230,6 +234,17 @@ function orderTrafficStatistics(col, update){
       var td = document.createElement("td");
       td.textContent = trafficStats[i].pretty[j];
       tr.appendChild(td);
+      if(j == 0){ //Handle hostname column
+        var hostname = "";
+        var ip = trafficStats[i].raw[0];
+        var entry = hostnames.find((a) => a.ip==ip);
+        if(entry && entry.hostname!=""){
+          hostname = entry.hostname;
+        }
+        var td = document.createElement("td");
+        td.textContent = hostname;
+        tr.appendChild(td);
+      }
     }
     table.appendChild(tr);
   }
