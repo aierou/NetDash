@@ -5,11 +5,11 @@ var request = require("request"),
 
 var config = require("../config.js");
 
-var url = "http://192.168.0.1"
+var url = "http://192.168.0.1";
 var cookies = request.jar();
 var baseHeaders = {
   "Referer": "http://192.168.0.1/logon/logon.htm" //just need some "valid" referer
-}
+};
 var hostnames = [];
 var trafficStats = [];
 var throttled = [];
@@ -21,11 +21,20 @@ var THROTTLE_LIST_DOWN = -2;
 var THROTTLE_LIST_BOTH = -3;
 var THROTTLE_TIMEOUT_CYCLES = 5;
 var THROTTLE_MAX_TIMEOUT = 600;
-var MAX_BANDWIDTH = 8*1000*1000;
+var MAX_BANDWIDTH = 7*1000*1000;
 
 function init(){
   setInterval(update, 2000);
   setInterval(lazyUpdate, 60000);
+
+  logIn(function(){
+    //Reset throttling groups
+    setGroup(THROTTLE_LIST_UP, "");
+    setGroup(THROTTLE_LIST_DOWN, "");
+    setGroup(THROTTLE_LIST_BOTH, "");
+
+    getDHCPClients();
+  });
 }
 
 function update(){

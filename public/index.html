@@ -5,37 +5,43 @@
   <script src="index.js"></script>
 </head>
 <body>
-  <h1>Network diagnostics</h1>
-  <div id="diagnostics">
-    <table>
-      <tr>
-        <td><h2>Wireless</h2></td>
-        <td><h2>Internet</h2></td>
-        <td><h2>Controls</h2></td>
-      </tr>
-      <tr>
-        <td>
-          <table>
-          <tr>
-            <td>Signal strength (dB): </td>
-            <td><div id="wireless_signal" class="bubble"></div></td>
-          </tr>
-          <tr>
-            <td>Transfer rate rx/tx (Mbps): </td>
-            <td><div id="transfer_rate" class="bubble"></div></td>
-          </tr>
-          </table>
-        </td>
-        <td>
-          <div id="health"></div>
-        </td>
-        <td>
-          <button id="reset">Reset Modem</button>
-          <div id="resetinfo"></div>
-        </td>
-      </tr>
-    </table>
-  </div>
-  <h1>Network traffic</h1>
-  <div id="traffic"></div>
+  <header>
+    <span>NetDash</span>
+    <img src = "logo.png"></img>
+  </header>
+  <main>
+    <h1>Network diagnostics</h1>
+    <div id="diagnostics">
+      <table>
+        <tr>
+          <td><h2>Wireless</h2></td>
+          <td><h2>Internet</h2></td>
+          <td><h2>Controls</h2></td>
+        </tr>
+        <tr>
+          <td>
+            <table>
+            <tr>
+              <td>Signal strength (dB): </td>
+              <td><div id="wireless_signal" class="bubble"></div></td>
+            </tr>
+            <tr>
+              <td>Transfer rate rx/tx (Mbps): </td>
+              <td><div id="transfer_rate" class="bubble"></div></td>
+            </tr>
+            </table>
+          </td>
+          <td>
+            <div id="health"></div>
+          </td>
+          <td>
+            <button id="reset">Reset Modem</button>
+            <div id="resetinfo"></div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <h1>Network traffic</h1>
+    <div id="traffic"></div>
+  </main>
 </body>

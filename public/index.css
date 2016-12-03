@@ -12,6 +12,27 @@ body {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: #333333;
+  margin: 0 auto;
+}
+header {
+  width: 100%;
+  text-align: center;
+  background-color: #5e7392;
+  color: white;
+  font-size: 30px;
+  line-height: 50px;
+}
+header span {
+  margin-right: 70px;
+}
+header img {
+  top: 3px;
+  margin-left: -60px;
+  position: absolute;
+  width: 50px;
+}
+main {
+  margin: 8px;
 }
 .sortascend::after {
   content: "▲";

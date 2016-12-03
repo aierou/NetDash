@@ -19,15 +19,8 @@ api.get("/traffic.json", function(req, res){
 });
 
 api.get("/wireless.json", function(req, res){
-  radio.getStatus(function(data, err){
-    if(err){
-      res.status(503);
-      res.send("Error retrieving resource");
-      return;
-    }
-    res.status(200);
-    res.json(data);
-  });
+  res.status(200);
+  res.json(radio.getStatus());
 });
 
 api.get("/health.json", function(req, res){
