@@ -2,6 +2,8 @@ var exports = module.exports;
 
 var ping = require("ping");
 
+var LATENCY_SAMPLES = 10;
+
 function Host(url){
   this.url = url;
   this.health = 5;
@@ -16,8 +18,6 @@ function Host(url){
   }
   this.meanlatency = 0;
 }
-
-var LATENCY_SAMPLES = 30;
 var hosts = [new Host("8.8.8.8"), new Host("google.com"), new Host("192.168.0.1"), new Host("192.168.0.3")];
 
 function check(){

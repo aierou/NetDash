@@ -34,6 +34,18 @@ api.get("/reset", function(req, res){
   res.send("Outlet reset.");
 });
 
+api.get("/critical", function(req, res){
+  router.criticalMode();
+  res.status(200);
+  res.send("Critical mode activated.");
+});
+
+api.get("/cleargroups", function(req, res){
+  router.clearGroups();
+  res.status(200);
+  res.send("Groups cleared.");
+});
+
 app.use("/api", api);
 app.get("/", function(req, res){
   res.sendFile("index.html", {root:__dirname + "/public/"});

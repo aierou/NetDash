@@ -45,6 +45,10 @@ main {
 #diagnostics > table {
   width: 100%;
 }
+/*#diagnostics > table > tbody > tr > td > * {
+  margin: 0 auto;
+  display: table;
+}*/
 #traffic table {
   border-collapse: collapse;
   width: 100%;
@@ -62,6 +66,16 @@ main {
   cursor: pointer;
   user-select: none;
 }
-#resetinfo {
+#controlinfo {
+  font-weight: bold;
   position: absolute;
+  bottom: 0;
+}
+#controls {
+  position: relative;
+  vertical-align: top;
+}
+
+#controls button{
+  width: 100%;
 }

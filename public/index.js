@@ -25,10 +25,11 @@ var trafficStats = [];
 var trafficSortProperties = {type:"descend", col:2};
 var wirelessData = {};
 var health = [];
-var hostnames = [];
 
 function init(){
-  document.getElementById("reset").onclick=resetModem;
+  document.getElementById("b_reset").onclick = resetModem;
+  document.getElementById("b_critical").onclick = criticalMode;
+  document.getElementById("b_groups").onclick = clearGroups;
   setInterval(update, 2000);
   update();
 }
@@ -48,13 +49,39 @@ function resetModem(){
   request.send();
 
   //Now the graphical stuff
-  document.getElementById("resetinfo").textContent = "Resetting...";
-  document.getElementById("reset").setAttribute("disabled", "disabled");
+  document.getElementById("controlinfo").textContent = "Resetting...";
+  document.getElementById("b_reset").setAttribute("disabled", "disabled");
   var resetDelay = setTimeout(function(){
     resetting = false;
-    document.getElementById("resetinfo").textContent = "";
-    document.getElementById("reset").removeAttribute("disabled");
-  },2000);
+    document.getElementById("controlinfo").textContent = "";
+    document.getElementById("b_reset").removeAttribute("disabled");
+  }, 2000);
+}
+
+function criticalMode(){
+  var request = new XMLHttpRequest();
+  request.open("GET", "/api/critical", true);
+  request.send();
+  request.onload = function(){
+    controlLogInfo("Critical mode activated.");
+  }
+}
+
+function clearGroups(){
+  var request = new XMLHttpRequest();
+  request.open("GET", "/api/cleargroups", true);
+  request.send();
+  request.onload = function(){
+    controlLogInfo("Groups cleared.");
+  }
+}
+var controlTimer;
+function controlLogInfo(text){
+  document.getElementById("controlinfo").textContent = text;
+  clearTimeout(controlTimer);
+  controlTimer = setTimeout(function(){
+    document.getElementById("controlinfo").textContent = "";
+  }, 3000);
 }
 
 function getWirelessStatus(){
@@ -80,9 +107,10 @@ function getTrafficStatistics(){
     if (request.status >= 200 && request.status < 400){
       var data = JSON.parse(request.responseText);
       trafficStats = data.traffic;
-      hostnames = data.clients;
       for(var i = 0; i < trafficStats.length; i++){
         var obj = {};
+        obj.hostname = data.clients.find((a) => a.ip == trafficStats[i][0]);
+        obj.throttle = data.throttled.find((a) => a.ip == trafficStats[i][0]);
         obj.raw = trafficStats[i];
         obj.pretty = trafficStats[i].slice(0); //Need to make a clone
         trafficStats[i] = obj;
@@ -234,12 +262,15 @@ function orderTrafficStatistics(col, update){
       var td = document.createElement("td");
       td.textContent = trafficStats[i].pretty[j];
       tr.appendChild(td);
+      var ip = trafficStats[i].raw[0];
       if(j == 0){ //Handle hostname column
+        if(trafficStats[i].throttle){
+          td.textContent += " - throttled ("+trafficStats[i].throttle.timeout+")";
+          tr.style.backgroundColor = "crimson";
+        }
         var hostname = "";
-        var ip = trafficStats[i].raw[0];
-        var entry = hostnames.find((a) => a.ip==ip);
-        if(entry && entry.hostname!=""){
-          hostname = entry.hostname;
+        if(trafficStats[i].hostname){
+          hostname = trafficStats[i].hostname.hostname;
         }
         var td = document.createElement("td");
         td.textContent = hostname;

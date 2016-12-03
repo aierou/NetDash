@@ -16,12 +16,14 @@ var throttled = [];
 var THROTTLE_THRESHOLD_UP = 200 * 1000; //Bytes
 var THROTTLE_THRESHOLD_DOWN = 2000 * 1000;
 var THROTTLE_ID_OFFSET = 3;
-var THROTTLE_LIST_UP = -1;
-var THROTTLE_LIST_DOWN = -2;
-var THROTTLE_LIST_BOTH = -3;
-var THROTTLE_TIMEOUT_CYCLES = 20;
+var THROTTLE_TIMEOUT_CYCLES = 30;
 var THROTTLE_MAX_TIMEOUT = 600;
 var MAX_BANDWIDTH = 6 * 1000 * 1000;
+var LIST_THROTTLE_UP = -1;
+var LIST_THROTTLE_DOWN = -2;
+var LIST_THROTTLE_BOTH = -3;
+var LIST_CRITICAL = -4;
+var CRITICAL_MODE_DURATION = 300 * 1000;
 
 function init(){
   setInterval(update, 2000);
@@ -29,9 +31,7 @@ function init(){
 
   logIn(function(){
     //Reset throttling groups
-    setGroup(THROTTLE_LIST_UP, "");
-    setGroup(THROTTLE_LIST_DOWN, "");
-    setGroup(THROTTLE_LIST_BOTH, "");
+    exports.clearGroups();
 
     getDHCPClients();
   });
@@ -50,7 +50,7 @@ var lastThrottleDown = "";
 var lastThrottleUp = "";
 var lastThrottleBoth = "";
 function manageTraffic(){
-  if(trafficStats.length <= 1) return;
+  if(trafficStats.length <= 1 || criticalMode) return;
   //Check that we match conditions for throttling (May need to modify math a bit)
   //None of this is going to be scientific; I'm just trying to find comfortable values.
   var totalBandwidth = 0;
@@ -81,29 +81,29 @@ function manageTraffic(){
     var id = parseInt(ip.split(".")[3], 10) - THROTTLE_ID_OFFSET;
     if(id > 50 - THROTTLE_ID_OFFSET) continue; //Unsupported ip (router limit)
     if(id == 1) continue; //Not throttling myself lul (in the future make priority lists)
-    var entry = throttled.find((a) => a.id == id) || {id:id, lists:[], timeout:0};
+    var entry = throttled.find((a) => a.id == id) || {id:id, lists:[], timeout:0, ip:ip};
     if(down > THROTTLE_THRESHOLD_DOWN && throttle){
       entry.timeout += THROTTLE_TIMEOUT_CYCLES;
-      if(!entry.lists.includes(THROTTLE_LIST_DOWN))
-        entry.lists.push(THROTTLE_LIST_DOWN);
+      if(!entry.lists.includes(LIST_THROTTLE_DOWN))
+        entry.lists.push(LIST_THROTTLE_DOWN);
     }
     if(up > THROTTLE_THRESHOLD_UP && throttle){
       entry.timeout += THROTTLE_TIMEOUT_CYCLES;
-      if(!entry.lists.includes(THROTTLE_LIST_UP))
-        entry.lists.push(THROTTLE_LIST_UP);
+      if(!entry.lists.includes(LIST_THROTTLE_UP))
+        entry.lists.push(LIST_THROTTLE_UP);
     }
-    if(down < THROTTLE_THRESHOLD_DOWN / 2 && entry.lists.includes(THROTTLE_LIST_DOWN)){
+    if(down < THROTTLE_THRESHOLD_DOWN / 2 && entry.lists.includes(LIST_THROTTLE_DOWN)){
       entry.timeout--;
       if(entry.timeout <= 0){
-        var index = entry.lists.indexOf(THROTTLE_LIST_DOWN);
+        var index = entry.lists.indexOf(LIST_THROTTLE_DOWN);
         if(index != -1)
           entry.lists.splice(index, 1);
       }
     }
-    if(up < THROTTLE_THRESHOLD_UP / 2 && entry.lists.includes(THROTTLE_LIST_UP)){
+    if(up < THROTTLE_THRESHOLD_UP / 2 && entry.lists.includes(LIST_THROTTLE_UP)){
       entry.timeout--;
       if(entry.timeout <= 0){
-        var index = entry.lists.indexOf(THROTTLE_LIST_UP);
+        var index = entry.lists.indexOf(LIST_THROTTLE_UP);
         if(index != -1)
           entry.lists.splice(index, 1);
       }
@@ -118,8 +118,8 @@ function manageTraffic(){
   var throttleDownUsers = [];
   var throttleBothUsers = [];
   for(var i = 0; i < throttled.length; i++){
-    var up = throttled[i].lists.includes(THROTTLE_LIST_UP);
-    var down = throttled[i].lists.includes(THROTTLE_LIST_DOWN);
+    var up = throttled[i].lists.includes(LIST_THROTTLE_UP);
+    var down = throttled[i].lists.includes(LIST_THROTTLE_DOWN);
     if(up && down){
        throttleBothUsers.push(throttled[i].id);
     }else if(up){
@@ -133,13 +133,41 @@ function manageTraffic(){
   var throttleBoth = throttleBothUsers.join(",");
 
     //Finally make the request to the server
-  if(throttleUp != lastThrottleUp) setGroup(THROTTLE_LIST_UP, throttleUp);
-  if(throttleDown != lastThrottleDown) setGroup(THROTTLE_LIST_DOWN, throttleDown);
-  if(throttleBoth != lastThrottleBoth) setGroup(THROTTLE_LIST_BOTH, throttleBoth);
+  if(throttleUp != lastThrottleUp) setGroup(LIST_THROTTLE_UP, throttleUp);
+  if(throttleDown != lastThrottleDown) setGroup(LIST_THROTTLE_DOWN, throttleDown);
+  if(throttleBoth != lastThrottleBoth) setGroup(LIST_THROTTLE_BOTH, throttleBoth);
 
   lastThrottleUp = throttleUp;
   lastThrottleDown = throttleDown;
   lastThrottleBoth = throttleBoth;
+}
+
+var criticalTimer;
+var criticalMode = false;
+exports.criticalMode = function(){
+  console.log(new Date().toISOString() + " Entering critical mode.");
+  criticalMode = true;
+  exports.clearGroups(true);
+  criticalTimer = setTimeout(function(){
+    console.log(new Date().toISOString() + " Exiting critical mode.");
+    criticalMode = false;
+    setGroup(LIST_CRITICAL, "");
+  }, CRITICAL_MODE_DURATION);
+  var list = [...Array(47).keys()].map(x => x += 1);
+  //TODO: Handle this with priority list
+  list.splice(0, 1); // me
+  setGroup(LIST_CRITICAL, list.join(","));
+}
+
+exports.clearGroups = function(critical){
+  setGroup(LIST_THROTTLE_UP, "");
+  setGroup(LIST_THROTTLE_DOWN, "");
+  setGroup(LIST_THROTTLE_BOTH, "");
+  if(!critical) setGroup(LIST_CRITICAL, ""); //Ideal solution here would be a queue
+  lastThrottleDown = "";
+  lastThrottleUp = "";
+  lastThrottleBoth = "";
+  clearTimeout(criticalTimer);
 }
 
 function setGroup(group, list){
@@ -229,14 +257,14 @@ function getTraffic(){
     var i = body.indexOf("var staEntryInf = new Array(");
     i += "var staEntryInf = new Array(".length;
     var j = body.indexOf(");\n</script>\n</HEAD>");
-    nums = body.substring(i,j);
+    nums = body.substring(i, j);
     nums = nums.split("\"").join("").split("\n").join(""); //replace all the extra formatting nonsense
     //Now we need to parse the data into something useful
     var values = nums.split(",");
     var statistics = new Array();
     var len = Math.floor(values.length / 10) * 10;
     for(var i = 0; i < len; i += 10){
-      var index = i/10;
+      var index = i / 10;
       statistics[index] = [];
       statistics[index][0] = values[i]; //IP
       //Don't care about i+1
@@ -254,7 +282,7 @@ function getTraffic(){
 }
 
 exports.getStatistics = function(){
-  return {traffic:trafficStats, clients:hostnames};
+  return {traffic:trafficStats, clients:hostnames, throttled:throttled};
 }
 
 init();
