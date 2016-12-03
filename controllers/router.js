@@ -8,7 +8,7 @@ var config = require("../config.js");
 var url = "http://192.168.0.1";
 var cookies = request.jar();
 var baseHeaders = {
-  "Referer": "http://192.168.0.1/logon/logon.htm" //just need some "valid" referer
+  "Referer": url + "/logon/logon.htm" //just need some "valid" referer
 };
 var hostnames = [];
 var trafficStats = [];
@@ -19,9 +19,9 @@ var THROTTLE_ID_OFFSET = 3;
 var THROTTLE_LIST_UP = -1;
 var THROTTLE_LIST_DOWN = -2;
 var THROTTLE_LIST_BOTH = -3;
-var THROTTLE_TIMEOUT_CYCLES = 5;
+var THROTTLE_TIMEOUT_CYCLES = 20;
 var THROTTLE_MAX_TIMEOUT = 600;
-var MAX_BANDWIDTH = 7*1000*1000;
+var MAX_BANDWIDTH = 6 * 1000 * 1000;
 
 function init(){
   setInterval(update, 2000);
@@ -70,9 +70,7 @@ function manageTraffic(){
       heavyusing++;
     }
   }
-  if(totalBandwidth < MAX_BANDWIDTH / heavyusing || heavyusing < 2){
-    return;
-  }
+  var throttle = totalBandwidth > MAX_BANDWIDTH / heavyusing && heavyusing > 2;
 
   var throttled_buffer = [];
   for(var i = 0; i < trafficStats.length; i++){
@@ -84,12 +82,12 @@ function manageTraffic(){
     if(id > 50 - THROTTLE_ID_OFFSET) continue; //Unsupported ip (router limit)
     if(id == 1) continue; //Not throttling myself lul (in the future make priority lists)
     var entry = throttled.find((a) => a.id == id) || {id:id, lists:[], timeout:0};
-    if(down > THROTTLE_THRESHOLD_DOWN){
+    if(down > THROTTLE_THRESHOLD_DOWN && throttle){
       entry.timeout += THROTTLE_TIMEOUT_CYCLES;
       if(!entry.lists.includes(THROTTLE_LIST_DOWN))
         entry.lists.push(THROTTLE_LIST_DOWN);
     }
-    if(up > THROTTLE_THRESHOLD_UP){
+    if(up > THROTTLE_THRESHOLD_UP && throttle){
       entry.timeout += THROTTLE_TIMEOUT_CYCLES;
       if(!entry.lists.includes(THROTTLE_LIST_UP))
         entry.lists.push(THROTTLE_LIST_UP);
@@ -146,9 +144,9 @@ function manageTraffic(){
 
 function setGroup(group, list){
   if(list == "") list = "NULL";
-  console.log("Throttling " + group + ": " + list);
+  console.log(new Date().toISOString() + " Throttling " + group + ": " + list);
   var formData = {
-    rd_view:1,
+    rd_view: 1,
     slt_user: 0,
     slt_group: group,
     selectgroup2: "",

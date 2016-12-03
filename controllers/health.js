@@ -18,7 +18,7 @@ function Host(url){
 }
 
 var LATENCY_SAMPLES = 30;
-var hosts = [new Host("8.8.8.8"), new Host("google.com"), new Host("192.168.0.1")];
+var hosts = [new Host("8.8.8.8"), new Host("google.com"), new Host("192.168.0.1"), new Host("192.168.0.3")];
 
 function check(){
   hosts.forEach(function(host){
