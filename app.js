@@ -3,6 +3,7 @@ var fs = require("fs"),
     express = require("express");
 
 var config = require("./config.js"),
+    logger = require("./utilities/logger.js"),
     radio = require("./controllers/radio.js"),
     outlet = require("./controllers/outlet.js"),
     router = require("./controllers/router.js"),
@@ -29,18 +30,21 @@ api.get("/health.json", function(req, res){
 });
 
 api.get("/reset", function(req, res){
+  logger.log(req.ip + " - " + req.method + " " + req.originalUrl);
   outlet.reset();
   res.status(200);
   res.send("Outlet reset.");
 });
 
 api.get("/critical", function(req, res){
+  logger.log(req.ip + " - " + req.method + " " + req.originalUrl);
   router.criticalMode();
   res.status(200);
   res.send("Critical mode activated.");
 });
 
 api.get("/cleargroups", function(req, res){
+  logger.log(req.ip + " - " + req.method + " " + req.originalUrl);
   router.clearGroups();
   res.status(200);
   res.send("Groups cleared.");
@@ -54,5 +58,5 @@ app.get("/", function(req, res){
 app.use(express.static("public"));
 
 app.listen(3000, function(){
-  console.log("Server started");
+  logger.log("Server started");
 });

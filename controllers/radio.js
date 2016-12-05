@@ -1,14 +1,15 @@
 var exports = module.exports;
 
 var request = require("request");
-var config = require("../config.js");
+var config = require("../config.js"),
+    logger = require("../utilities/logger.js");
 
 var url = "https://192.168.0.5"
 var cookies = request.jar();
 var status;
 
 function logIn(callback, cbparams){
-  console.log(new Date().toISOString() + " Logging into radio");
+  logger.log("Logging into radio");
   var formData = {
     username: config.radio.username,
     password: config.radio.password

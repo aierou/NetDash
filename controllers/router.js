@@ -3,7 +3,8 @@ var exports = module.exports;
 var request = require("request"),
     crypto = require("crypto");
 
-var config = require("../config.js");
+var config = require("../config.js"),
+    logger = require("../utilities/logger.js");
 
 var url = "http://192.168.0.1";
 var cookies = request.jar();
@@ -132,7 +133,7 @@ function manageTraffic(){
   var throttleDown = throttleDownUsers.join(",");
   var throttleBoth = throttleBothUsers.join(",");
 
-    //Finally make the request to the server
+  //Finally make the request to the server
   if(throttleUp != lastThrottleUp) setGroup(LIST_THROTTLE_UP, throttleUp);
   if(throttleDown != lastThrottleDown) setGroup(LIST_THROTTLE_DOWN, throttleDown);
   if(throttleBoth != lastThrottleBoth) setGroup(LIST_THROTTLE_BOTH, throttleBoth);
@@ -145,11 +146,11 @@ function manageTraffic(){
 var criticalTimer;
 var criticalMode = false;
 exports.criticalMode = function(){
-  console.log(new Date().toISOString() + " Entering critical mode.");
+  logger.log("Entering critical mode.");
   criticalMode = true;
   exports.clearGroups(true);
   criticalTimer = setTimeout(function(){
-    console.log(new Date().toISOString() + " Exiting critical mode.");
+    logger.log("Exiting critical mode.");
     criticalMode = false;
     setGroup(LIST_CRITICAL, "");
   }, CRITICAL_MODE_DURATION);
@@ -163,7 +164,7 @@ exports.clearGroups = function(critical){
   setGroup(LIST_THROTTLE_UP, "");
   setGroup(LIST_THROTTLE_DOWN, "");
   setGroup(LIST_THROTTLE_BOTH, "");
-  if(!critical) setGroup(LIST_CRITICAL, ""); //Ideal solution here would be a queue
+  if(!critical) setGroup(LIST_CRITICAL, ""); //Ideal solution here would be a request queue
   lastThrottleDown = "";
   lastThrottleUp = "";
   lastThrottleBoth = "";
@@ -172,7 +173,7 @@ exports.clearGroups = function(critical){
 
 function setGroup(group, list){
   if(list == "") list = "NULL";
-  console.log(new Date().toISOString() + " Throttling " + group + ": " + list);
+  logger.log("Group set " + group + ": " + list);
   var formData = {
     rd_view: 1,
     slt_user: 0,
@@ -193,7 +194,7 @@ function setGroup(group, list){
 }
 
 function logIn(callback, cbparams){
-  console.log(new Date().toISOString() + " Logging into router");
+  logger.log("Logging into router");
   request.get({url:url, followAllRedirects:true, jar:cookies}, function(err, res, body){
     //Lol what the hell is this (how the client sends the password)
     var cs = cookies.getCookieString(url).split("=")[1];
