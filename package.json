@@ -4,15 +4,28 @@
   "description": "Network dashboard",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/app.js",
+    "build": "tsc"
   },
   "author": "Aierou",
   "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.1",
+    "eslint-plugin-react": "^7.11.0"
+  },
   "dependencies": {
+    "@types/express": "^4.16.1",
+    "@types/request": "^2.48.1",
     "crypto": "0.0.3",
     "express": "^4.14.0",
     "form-data": "^2.1.2",
     "ping": "^0.2.1",
-    "request": "^2.79.0"
+    "request": "^2.88.0",
+    "typescript": "^3.5.1"
   }
 }

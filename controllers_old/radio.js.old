@@ -1,0 +1,47 @@
+const exports = module.exports;
+
+const request = require('request');
+const config = require('../config.js');
+
+
+const logger = require('../utilities/logger.js');
+
+const url = 'https://192.168.0.5';
+const cookies = request.jar();
+let status;
+
+function logIn(callback, cbparams) {
+  logger.log('Logging into radio');
+  const formData = {
+    username: config.radio.username,
+    password: config.radio.password,
+  };
+  request.get({ url, followAllRedirects: true, jar: cookies }, (err, res, body) => {
+    if (err) return console.error(err);
+    request.post({
+      url: `${url}/login.cgi`, formData, followAllRedirects: true, jar: cookies,
+    }, (err, res, body) => {
+      if (err) return console.error(err);
+      callback.apply(callback, cbparams);
+    });
+  });
+}
+
+function getWirelessStatus() {
+  request.get({ url: `${url}/status.cgi`, jar: cookies }, (err, res, body) => {
+    if (err) {
+      return console.error(err);
+    }
+    if (res.request.uri.pathname != '/status.cgi') {
+      // Need to log-in again.
+      logIn(exports.getStatus);
+      return;
+    }
+    status = JSON.parse(body);
+  });
+}
+setInterval(getWirelessStatus, 1000);
+
+exports.getStatus = function () {
+  return status;
+};

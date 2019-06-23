@@ -1,5 +1,5 @@
-var exports = module.exports;
+const exports = module.exports;
 
-exports.log = function(text){
-  console.log(new Date().toLocaleString() + " " + text);
-}
+exports.log = function (text) {
+  console.log(`${new Date().toLocaleString()} ${text}`);
+};

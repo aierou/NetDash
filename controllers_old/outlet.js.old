@@ -1,0 +1,19 @@
+const exports = module.exports;
+
+const request = require('request');
+const config = require('../config.js');
+
+
+const logger = require('../utilities/logger.js');
+
+const url = 'http://192.168.0.2';
+const baseHeaders = {
+  Authorization: `Basic ${new Buffer(`${config.reset.username}:${config.reset.password}`).toString('base64')}`,
+};
+
+exports.reset = function () {
+  request.get({ url: `${url}/reset.cgi`, headers: baseHeaders }, (err, res, body) => {
+    if (err) console.log(err);
+    logger.log('Modem reset');
+  });
+};
